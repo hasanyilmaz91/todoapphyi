@@ -10,7 +10,7 @@ import './body.html';
 Template.body.onCreated(function bodyOnCreated() {
 
     this.state = new ReactiveDict();
-
+    Meteor.subscribe('tasks');
 });
 
 Template.body.helpers({
@@ -25,7 +25,13 @@ Template.body.helpers({
     },
     incompleteCount() {
         return Tasks.find({ checked: { $ne: true } }).count();
-    },
+    }
+});
+
+Template.task.helpers({
+    isOwner: function() {
+        return this.owner == Meteor.userId();
+    }
 });
 
 Template.body.events({
@@ -38,12 +44,7 @@ Template.body.events({
         const text = target.text.value;
 
         // Insert a task into the collection
-        Tasks.insert({
-            text,
-            createdAt: new Date(), // current time
-            owner: Meteor.userId(),
-            username: Meteor.user().username,
-        });
+        Meteor.call('tasks.insert', text);
 
         // Clear form
         target.text.value = '';
